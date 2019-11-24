@@ -8,5 +8,6 @@ setup(
         'html5lib',
         'pyotp',
         'github3.py',
+        'aiohttp',
     ]
 )
