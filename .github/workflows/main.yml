@@ -1,27 +1,21 @@
-name: CI
-
+name: Continuous Integration
 on: [push]
-
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
-    name: testing
-
     steps:
     - uses: actions/checkout@v1
     - uses: actions/setup-node@v1
     - uses: actions/setup-python@v1
       with:
         python-version: '3.8'
-    - name: Install
-      run: pip install -e .
+    - run: pip install git+https://github.com/damoti/stream-controller.git#egg=streamcontroller
+    - run: pip install -e .
     - run: npm install localtunnel
-    - name: Test
-      working-directory: tests
+    - working-directory: tests
       env:
         TEST_OTP: ${{ secrets.TEST_OTP }}
         TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
         TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
+        TEST_USE_LOCALTUNNEL: node_modules/localtunnel/bin/lt.js
       run: python -m unittest discover

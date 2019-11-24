@@ -1,2 +1,3 @@
-from .user import GitHubTestUser
+__version__ = "0.0.1"
+
 from .testcase import GitHubTestCase

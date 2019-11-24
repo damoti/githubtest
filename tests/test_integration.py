@@ -1,58 +1,37 @@
-import os
-import json
-import asyncio
-from unittest import IsolatedAsyncioTestCase
-from aiohttp import web
-
-from githubtest import GitHubTestUser
-from githubtest.localtunnel import Localtunnel
+from githubtest.testcase import GitHubTestCase
+from githubtest.server import GitHubAppServer
 
 
-class TestGitHubUser(IsolatedAsyncioTestCase):
+class TestGitHubUser(GitHubTestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        otp_secret = os.environ['TEST_OTP']
-        username = os.environ['TEST_USERNAME']
-        password = os.environ['TEST_PASSWORD']
-        cls.ghu = GitHubTestUser.connect('python githubtest', otp_secret, username, password)
+    APP_MANIFEST = {
+        "name": "PyGitHubTest",
+        "url": "https://www.example.com",
+        "hook_attributes": {
+            "url": None,
+        },
+        "redirect_url": "https://example.com/callback",
+        "public": False,
+        "default_events": [
+            "push",
+        ],
+        "default_permissions": {
+            "contents": "write",
+        },
+    }
+
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+        self.server = GitHubAppServer(self.APP_PORT)
+        await self.server.start()
+        self.addAsyncCleanup(self.server.stop)
 
     async def test(self):
-        ghu = self.ghu
-        print('login successful')
-
-        localtunnel = await Localtunnel.start('8080')
-        self.addAsyncCleanup(localtunnel.stop)
-
-        if ghu.app_exists():
-            print('app exists')
-            ghu.delete_app()
-            print('deleted app')
-
-        ghu.create_app(localtunnel.url)
-        print('app created')
-        ghu.install_app()
-        print('app installed')
-
-        gh = ghu.user_api
-        if not next(gh.repositories(), None):
-            gh.create_repository('test-repo', auto_init=True)
-
-        app = web.Application()
-        runner = web.AppRunner(app)
-
-        async def hello(request):
-            d = await request.json()
-            print(json.dumps(d, indent=4))
-            return web.Response(text="{'status': 'received'}")
-        app.add_routes([web.post('/', hello)])
-
-        await runner.setup()
-        site = web.TCPSite(runner)
-        await site.start()
-
-        repo = gh.repository(os.environ['TEST_USERNAME'], 'test-repo')
+        user = self.api.get_user_api()
+        repo = next(user.repositories(), None)
+        if not repo:
+            repo = user.create_repository('test-repo', auto_init=True)
         readme = repo.file_contents('README.md')
-        readme.update('changed', b'new readme content')
-
-        await asyncio.sleep(10)
+        readme.update('changed the readme', b'new readme content')
+        push = await self.server.events.where(lambda e: e.event == 'push')
+        self.assertEqual(push.payload['head_commit']['message'], 'changed the readme')
