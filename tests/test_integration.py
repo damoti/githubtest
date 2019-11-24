@@ -2,8 +2,10 @@ import os
 import json
 import asyncio
 from unittest import IsolatedAsyncioTestCase
-from githubtest import GitHubTestUser
 from aiohttp import web
+
+from githubtest import GitHubTestUser
+from githubtest.localtunnel import Localtunnel
 
 
 class TestGitHubUser(IsolatedAsyncioTestCase):
@@ -18,23 +20,21 @@ class TestGitHubUser(IsolatedAsyncioTestCase):
     async def test(self):
         ghu = self.ghu
         print('login successful')
-        if not ghu.app_exists():
-            print('creating')
-            ghu.create_app()
-            print('app created')
-        else:
-            print('app already exists')
 
-        api = ghu.get_app_api()
+        localtunnel = await Localtunnel.start('8080')
+        self.addAsyncCleanup(localtunnel.stop)
 
-        if not next(api.app_installations(), None):
-            ghu.install_app()
-            print('app installed')
-        else:
-            print('app already installed')
+        if ghu.app_exists():
+            print('app exists')
+            ghu.delete_app()
+            print('deleted app')
+
+        ghu.create_app(localtunnel.url)
+        print('app created')
+        ghu.install_app()
+        print('app installed')
 
         gh = ghu.user_api
-
         if not next(gh.repositories(), None):
             gh.create_repository('test-repo', auto_init=True)
 

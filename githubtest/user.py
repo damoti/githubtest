@@ -55,12 +55,12 @@ class GitHubTestUser:
         r = self.get(f"settings/apps/{self.app_id}")
         return r.status_code == 200
 
-    def create_app(self):
+    def create_app(self, webhook):
         app = json.dumps({
             "name": self.app_name,
             "url": "https://www.example.com",
             "hook_attributes": {
-                "url": "https://example.com/github/events",
+                "url": webhook,
             },
             "redirect_url": "https://example.com/callback",
             "public": False,

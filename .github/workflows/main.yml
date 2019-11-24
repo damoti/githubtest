@@ -11,11 +11,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
+    - uses: actions/setup-node@v1
     - uses: actions/setup-python@v1
       with:
         python-version: '3.8'
     - name: Install
       run: pip install -e .
+    - run: npm install localtunnel
     - name: Test
       working-directory: tests
       env:
