@@ -19,7 +19,7 @@ class GitHubTestUser:
         self.external_ip = external_ip
         self.session = session
         self.user_api = github3.GitHub()
-        self.state = GitHubTestState()
+        #self.state = GitHubTestState()
 
     @classmethod
     def connect(cls, app_name, secret, username, password) -> 'GitHub':
@@ -72,12 +72,15 @@ class GitHubTestUser:
         data = get_form_data(r.content, id='new_integration_manifest')
         r = self.post("settings/apps", data=data)
         soup = BeautifulSoup(r.content, 'html5lib')
+        errors = soup.find_all('dd', **{'class': 'error'})
+        if errors:
+            raise ValueError([e.text for e in errors])
         redirect = soup.find('a', id="redirect")['href']
         code = parse_qs(urlparse(redirect).query)['code'][0]
         r = self.session.post(f"https://api.github.com/app-manifests/{code}/conversions", headers={
             'Accept': 'application/vnd.github.fury-preview+json'
         })
-        self.state['app'] = r.json()
+        #self.state['app'] = r.json()
 
     def delete_app(self):
         r = self.get(f"settings/apps/{self.app_id}/advanced")
@@ -86,7 +89,7 @@ class GitHubTestUser:
         data = get_form_data(form=form)
         data['verify'] = self.app_name
         r = self.post(f"settings/apps/{self.app_id}", data=data)
-        self.state['app'] = None
+        #self.state['app'] = None
 
     def install_app(self):
         r = self.get(f"apps/{self.app_id}/installations/new")
