@@ -10,15 +10,12 @@ class GitHubTestState:
         self.state_path = os.path.join(directory, f'{app_id}.json')
         if not os.path.exists(directory):
             os.mkdir(directory)
-        if not self.load():
-            self.save()
+        self.load()
 
     def load(self):
         if os.path.exists(self.state_path):
             with open(self.state_path) as fp:
                 self.state = json.load(fp)
-                return True
-        return False
 
     def save(self):
         with open(self.state_path, 'w') as fp:

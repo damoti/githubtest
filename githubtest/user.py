@@ -19,7 +19,7 @@ class GitHubTestUser:
         self.external_ip = external_ip
         self.session = session
         self.user_api = github3.GitHub()
-        #self.state = GitHubTestState()
+        self.state = GitHubTestState(self.app_id)
 
     @classmethod
     def connect(cls, app_name, secret, username, password) -> 'GitHub':
@@ -27,6 +27,13 @@ class GitHubTestUser:
         gh.login(secret, username, password)
         gh.user_api.login(username, password, two_factor_callback=TOTP(secret).now)
         return gh
+
+    def get_app_api(self):
+        app = self.state.get('app')
+        if app:
+            api = github3.GitHub()
+            api.login_as_app(app['pem'].encode(), app['id'])
+            return api
 
     def login(self, secret, username, password):
         r = self.get("session")
@@ -80,7 +87,7 @@ class GitHubTestUser:
         r = self.session.post(f"https://api.github.com/app-manifests/{code}/conversions", headers={
             'Accept': 'application/vnd.github.fury-preview+json'
         })
-        #self.state['app'] = r.json()
+        self.state['app'] = r.json()
 
     def delete_app(self):
         r = self.get(f"settings/apps/{self.app_id}/advanced")
@@ -89,7 +96,7 @@ class GitHubTestUser:
         data = get_form_data(form=form)
         data['verify'] = self.app_name
         r = self.post(f"settings/apps/{self.app_id}", data=data)
-        #self.state['app'] = None
+        self.state['app'] = None
 
     def install_app(self):
         r = self.get(f"apps/{self.app_id}/installations/new")
