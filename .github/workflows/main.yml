@@ -18,4 +18,8 @@ jobs:
       run: pip install -e .
     - name: Test
       working-directory: tests
+      env:
+        TEST_OTP: ${{ secrets.TEST_OTP }}
+        TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
+        TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
       run: python -m unittest discover
