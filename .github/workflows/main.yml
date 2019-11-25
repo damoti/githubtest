@@ -12,10 +12,13 @@ jobs:
     - run: pip install git+https://github.com/damoti/stream-controller.git#egg=streamcontroller
     - run: pip install -e .
     - run: npm install localtunnel
+    - env:
+        TEST_USE_LOCALTUNNEL: ${{ env.GITHUB_WORKSPACE} }/node_modules/localtunnel/bin/lt.js
+      run: echo $TEST_USE_LOCALTUNNEL
     - working-directory: tests
       env:
         TEST_OTP: ${{ secrets.TEST_OTP }}
         TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
         TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
-        TEST_USE_LOCALTUNNEL: node_modules/localtunnel/bin/lt.js
+        TEST_USE_LOCALTUNNEL: ${{ env.GITHUB_WORKSPACE} }/node_modules/localtunnel/bin/lt.js
       run: python -m unittest discover

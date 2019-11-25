@@ -15,10 +15,8 @@ class Localtunnel:
         self._loop: Optional[asyncio.AbstractEventLoop] = None
 
     @classmethod
-    async def start(cls, path: str, port: int):
-        root = os.path.dirname(os.path.dirname(__file__))
-        lt_js = os.path.join(root, path)
-        command = [lt_js, f'--port={port}']
+    async def start(cls, localtunnel_path: str, port: int):
+        command = [localtunnel_path, f'--port={port}']
         log.debug(' '.join(command))
         proc = await asyncio.create_subprocess_exec(*command, stdout=subprocess.PIPE)
         data = await proc.stdout.readline()
@@ -43,4 +41,6 @@ class Localtunnel:
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
-    asyncio.run(Localtunnel.start('node_modules/localtunnel/bin/lt.js', 8080))
+    root = os.path.dirname(os.path.dirname(__file__))
+    lt_js = os.path.join(root, 'node_modules/localtunnel/bin/lt.js')
+    asyncio.run(Localtunnel.start(lt_js, 8080))
