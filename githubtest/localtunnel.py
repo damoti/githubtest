@@ -18,8 +18,11 @@ class Localtunnel:
     async def start(cls, localtunnel_path: str, port: int):
         command = [localtunnel_path, f'--port={port}']
         log.debug(' '.join(command))
+        print('tunnel sub process starting')
         proc = await asyncio.create_subprocess_exec(*command, stdout=subprocess.PIPE)
+        print('tunnel readline')
         data = await proc.stdout.readline()
+        print(f'read: {data}')
         url = data.decode().strip()[len('your url is: '):]
         log.debug(url)
         return cls(proc, url)
