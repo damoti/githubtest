@@ -29,10 +29,12 @@ class GitHubTestCase(IsolatedAsyncioTestCase):
         api = GitHubTestUser.connect(
             cls.APP_MANIFEST,
             os.environ['TEST_OTP'],
+            os.environ['TEST_OAUTH'],
             os.environ['TEST_USERNAME'],
             os.environ['TEST_PASSWORD']
         )
         api.ensure_app()
         api.ensure_install()
+        cls.addClassCleanup(api.disconnect)
 
         cls.api = api

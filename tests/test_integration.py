@@ -1,3 +1,6 @@
+import asyncio
+from functools import partial
+
 from githubtest.testcase import GitHubTestCase
 from githubtest.server import GitHubAppServer
 
@@ -27,11 +30,13 @@ class TestGitHubUser(GitHubTestCase):
         self.addAsyncCleanup(self.server.stop)
 
     async def test(self):
+        self.server.events.listen(lambda e: print(e.event))
         user = self.api.get_user_api()
-        repo = next(user.repositories(), None)
+        repo = await user.async_first_repositories()
         if not repo:
-            repo = user.create_repository('test-repo', auto_init=True)
-        readme = repo.file_contents('README.md')
-        readme.update('changed the readme', b'new readme content')
+            repo = await user.async_create_repository('test-repo', auto_init=True)
+            await self.server.events.where(lambda e: e.event == 'push')
+        readme = await repo.async_file_contents('README.md')
+        await readme.async_update('changed the readme', b'new readme content')
         push = await self.server.events.where(lambda e: e.event == 'push')
         self.assertEqual(push.payload['head_commit']['message'], 'changed the readme')

@@ -1,4 +1,5 @@
 import json
+import asyncio
 import github3
 import requests
 from github3.session import AppBearerTokenAuth
@@ -9,6 +10,30 @@ from slugify import slugify
 
 from githubtest.state import GitHubTestState
 from githubtest.utils import get_form_data
+
+
+class RunInExecutorWrapper:
+
+    def __init__(self, obj):
+        self.obj = obj
+
+    def __getattr__(self, name):
+        if name.startswith('async_'):
+            name = name[len('async_'):]
+            if name.startswith('first_'):
+                name = name[len('first_'):]
+                return self.wrap(next, getattr(self.obj, name)(), None)
+            return self.wrap(getattr(self.obj, name))
+        return getattr(self.obj, name)
+
+    @classmethod
+    def wrap(cls, *args, **kwargs):
+        async def _wrap(*sub_args, **sub_kwargs):
+            result = await asyncio.get_running_loop().run_in_executor(
+                None, *args, *sub_args, **kwargs, **sub_kwargs
+            )
+            return cls(result)
+        return _wrap
 
 
 class GitHubTestUser:
@@ -25,11 +50,19 @@ class GitHubTestUser:
         self.state = GitHubTestState(self.app_id)
 
     @classmethod
-    def connect(cls, manifest, secret, username, password) -> 'GitHub':
+    def connect(cls, manifest, secret, oauth, username, password) -> 'GitHub':
         gh = cls(manifest, requests.Session())
         gh.login(secret, username, password)
-        gh._user.login(username, password, two_factor_callback=TOTP(secret).now)
+        gh._user.login(token=oauth)
         return gh
+
+    def disconnect(self):
+        if self.session:
+            self.session.close()
+        if self._user.session:
+            self._user.session.close()
+        if self._app.session:
+            self._app.session.close()
 
     def get(self, url):
         return self.session.get(self.HOST + url)
@@ -48,7 +81,7 @@ class GitHubTestUser:
         r = self.post("sessions/two-factor", data=data)
 
     def get_user_api(self):
-        return self._user
+        return RunInExecutorWrapper(self._user)
 
     def ensure_app(self):
         if not self.get_app_data():
