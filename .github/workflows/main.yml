@@ -15,6 +15,7 @@ jobs:
     - working-directory: tests
       env:
         TEST_OTP: ${{ secrets.TEST_OTP }}
+        TEST_OAUTH: ${{ secrets.TEST_OAUTH }}
         TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
         TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
         TEST_USE_LOCALTUNNEL: ${{ github.workspace }}/node_modules/localtunnel/bin/lt.js

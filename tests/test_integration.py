@@ -30,7 +30,6 @@ class TestGitHubUser(GitHubTestCase):
         self.addAsyncCleanup(self.server.stop)
 
     async def test(self):
-        self.server.events.listen(lambda e: print(e.event))
         user = self.api.get_user_api()
         repo = await user.async_first_repositories()
         if not repo:
