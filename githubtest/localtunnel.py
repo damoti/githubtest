@@ -20,9 +20,10 @@ class Localtunnel:
         log.debug(' '.join(command))
         print('tunnel sub process starting')
         proc = await asyncio.create_subprocess_exec(*command, stdout=subprocess.PIPE)
-        print('tunnel readline')
-        data = await asyncio.wait_for(proc.stdout.readline(), 30)
+        data = await asyncio.wait_for(proc.stdout.read(), 30)
         print(f'read: {data}')
+        data = await asyncio.wait_for(proc.stdout.readline(), 30)
+        print(f'readline: {data}')
         url = data.decode().strip()[len('your url is: '):]
         log.debug(url)
         return cls(proc, url)
