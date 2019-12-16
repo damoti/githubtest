@@ -11,7 +11,7 @@ jobs:
         python-version: '3.8'
     - run: pip install git+https://github.com/damoti/stream-controller.git#egg=streamcontroller
     - run: pip install -e .
-    - run: npm install -g localtunnel
+    - run: npm install localtunnel
     - run: |
         ls ${{ github.workspace }}/node_modules/localtunnel/bin/lt.js
         ${{ github.workspace }}/node_modules/localtunnel/bin/lt.js --help
