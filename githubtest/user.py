@@ -52,7 +52,9 @@ class GitHubTestUser:
     @classmethod
     def connect(cls, manifest, secret, oauth, username, password) -> 'GitHub':
         gh = cls(manifest, requests.Session())
+        print('gh.login')
         gh.login(secret, username, password)
+        print('gh._user.login')
         gh._user.login(token=oauth)
         return gh
 
