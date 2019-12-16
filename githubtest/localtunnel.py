@@ -20,6 +20,7 @@ class Localtunnel:
         log.debug(' '.join(command))
         print('tunnel sub process starting')
         proc = await asyncio.create_subprocess_exec(*command, stdout=subprocess.PIPE)
+        return
         print('tunnel readline')
         data = await proc.stdout.readline()
         print(f'read: {data}')
