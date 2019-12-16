@@ -15,6 +15,7 @@ class GitHubTestCase(IsolatedAsyncioTestCase):
     @classmethod
     def setUpClass(cls):
         print('before tunnel')
+        return
         if 'TEST_USE_LOCALTUNNEL' in os.environ:
             tunnel = Localtunnel.sync_start(os.environ['TEST_USE_LOCALTUNNEL'], cls.APP_PORT)
             cls.addClassCleanup(tunnel.sync_stop)
