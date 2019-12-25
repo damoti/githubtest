@@ -24,17 +24,12 @@ class TestGitHubUser(GitHubTestCase):
     }
 
     async def asyncSetUp(self):
-        print('before asyncSetUp')
         await super().asyncSetUp()
-        print('after asyncSetUp')
         self.server = GitHubAppServer(self.APP_PORT)
-        print('before server.star')
         await self.server.start()
-        print('after server.star')
         self.addAsyncCleanup(self.server.stop)
 
     async def test(self):
-        print('in test method')
         user = self.api.get_user_api()
         repo = await user.async_first_repositories()
         if not repo:

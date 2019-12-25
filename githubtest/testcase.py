@@ -1,8 +1,9 @@
 import os
+import asyncio
 from urllib.parse import urlparse
 from unittest import IsolatedAsyncioTestCase
 
-from githubtest.localtunnel import Localtunnel
+from githubtest.ngrok import Ngrok
 from githubtest.user import GitHubTestUser
 from githubtest.utils import get_external_ip
 
@@ -14,14 +15,17 @@ class GitHubTestCase(IsolatedAsyncioTestCase):
 
     @classmethod
     def setUpClass(cls):
-        print('before tunnel')
-        if 'TEST_USE_LOCALTUNNEL' in os.environ:
-            tunnel = Localtunnel.sync_start(os.environ['TEST_USE_LOCALTUNNEL'], cls.APP_PORT)
-            cls.addClassCleanup(tunnel.sync_stop)
-            webhook = tunnel.url
+        if 'NGROK_TOKEN' in os.environ:
+            loop = asyncio.get_event_loop()
+            ngrok = Ngrok()
+            loop.run_until_complete(ngrok.ensure())
+            loop.run_until_complete(ngrok.authenticate(os.environ['NGROK_TOKEN']))
+            loop.run_until_complete(ngrok.start())
+            cls.addClassCleanup(ngrok.stop)
+            tunnel = loop.run_until_complete(ngrok.create_tunnel(addr=str(cls.APP_PORT)))
+            webhook = tunnel['public_url']
         else:
             webhook = f"http://{get_external_ip()}:{cls.APP_PORT}"
-        print('after tunnel')
 
         cls.APP_MANIFEST["name"] += f" {urlparse(webhook).netloc}"
         if len(cls.APP_MANIFEST["name"]) > 34:  # GitHub does not allow names longer than 34.
