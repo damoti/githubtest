@@ -1,6 +1,3 @@
-import asyncio
-from functools import partial
-
 from githubtest.testcase import GitHubTestCase
 from githubtest.server import GitHubAppServer
 

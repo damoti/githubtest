@@ -10,6 +10,8 @@ from githubtest.utils import get_external_ip
 
 class GitHubTestCase(IsolatedAsyncioTestCase):
 
+    api: GitHubTestUser
+
     APP_PORT = 8080
     APP_MANIFEST = {}
 
@@ -44,3 +46,7 @@ class GitHubTestCase(IsolatedAsyncioTestCase):
         cls.addClassCleanup(api.disconnect)
 
         cls.api = api
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.api.delete_app()

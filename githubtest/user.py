@@ -2,6 +2,7 @@ import json
 import asyncio
 import github3
 import requests
+from functools import partial
 from github3.session import AppBearerTokenAuth
 from urllib.parse import urlparse, parse_qs
 from bs4 import BeautifulSoup
@@ -30,9 +31,10 @@ class RunInExecutorWrapper:
     def wrap(cls, *args, **kwargs):
         async def _wrap(*sub_args, **sub_kwargs):
             result = await asyncio.get_running_loop().run_in_executor(
-                None, *args, *sub_args, **kwargs, **sub_kwargs
+                None, partial(*args, *sub_args, **kwargs, **sub_kwargs)
             )
-            return cls(result)
+            if result:
+                return cls(result)
         return _wrap
 
 
