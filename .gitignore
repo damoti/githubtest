@@ -2,7 +2,4 @@ __pycache__
 githubtest.egg-info
 .idea
 
-node_modules
-package-lock.json
-
 githubtest/bin

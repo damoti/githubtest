@@ -8,8 +8,10 @@ jobs:
     - uses: actions/setup-python@v1
       with:
         python-version: '3.8'
-    - run: pip install git+https://github.com/damoti/stream-controller.git#egg=streamcontroller
-    - run: pip install -e .
+    - name: pip install
+      run: |
+        pip install git+https://github.com/damoti/stream-controller.git#egg=streamcontroller
+        pip install -e .
     - working-directory: tests
       env:
         TEST_OTP: ${{ secrets.TEST_OTP }}
