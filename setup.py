@@ -10,7 +10,7 @@ with open(os.path.join(HERE, 'githubtest', '__init__.py')) as fh:
 setup(
     name='githubtest',
     version=version,
-    url='https://github.com/damoti/github-test',
+    url='https://github.com/damoti/githubtest',
     license='BSD',
     description='Testing framework for writing GitHub Apps in Python.',
     long_description=long_description,
